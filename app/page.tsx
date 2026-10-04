@@ -1,1084 +1,1074 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Mail, MapPin, ArrowUp, X, FileText, Menu } from "lucide-react";
 
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Menu,
-  X,
-  Star,
-  Quote,
-  CheckCircle2,
-  Send,
-  Mail,
-  MapPin,
-  Phone,
-} from "lucide-react";
-import { FaGithub, FaInstagram, FaLinkedin } from "react-icons/fa";
+/* ==================================================================== */
+/*  CUSTOM SVG ICONS (Github & Linkedin)                                */
+/* ==================================================================== */
 
-import { CONFIG } from "@/lib/config";
-import { blogs } from "@/lib/blogs";
-import { services, experience, portfolio } from "@/lib/data";
+function IconGithub({ size = 24, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+    </svg>
+  );
+}
 
-// -----------------------------------------------------------------------------
-// Helper: reduce motion detection
-// -----------------------------------------------------------------------------
-const usePrefersReducedMotion = () => {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+function IconLinkedin({ size = 24, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+    </svg>
+  );
+}
+
+/* ==================================================================== */
+/*  CONTENT — edit everything here (text, links, image paths)           */
+/* ==================================================================== */
+
+const PROFILE = {
+  name: "Muhammad Haris",
+  heroName: "Haris", // shown in the Home section
+  role: "Computer Science Student",
+  tagline: "AI  •  Cybersecurity  •  Web Development",
+  email: "harishkm9899@gmail.com",
+  github: "https://github.com/professorharis", // GitHub profile
+  linkedin: "https://www.linkedin.com/in/harisxdev", //  LinkedIn profile
+  heroPhoto: "/haris-hero.jpg", // Hero section photo 
+  aboutPhoto: "/haris-about.jpg", // About section photo
+  location: "District Mohmand, Khyber Pakhtunkhwa, Pakistan",
+};
+
+const FORM_ENDPOINT = "";
+
+const NAV = [
+  ["Home", "home"],
+  ["About", "about"],
+  ["Skills", "skills"],
+  ["Projects", "projects"],
+  ["Education", "education"],
+  ["Certificates", "certificates"],
+  ["Contact", "contact"],
+] as const;
+
+const SKILL_GROUPS = [
+  {
+    title: "Technical Skills",
+    icon: "</>",
+    items: [
+      "Modern Web Development",
+      "Frontend Development",
+      "Artificial Intelligence Fundamentals",
+      "Cybersecurity Fundamentals",
+      "Microsoft Office",
+      "Technical Problem-Solving",
+    ],
+  },
+  {
+    title: "AI & Creative Skills",
+    icon: "AI",
+    items: [
+      "AI Tools & Prompting",
+      "AI-Assisted Development",
+      "AI-Assisted Content Creation",
+      "Thumbnail & Graphic Design",
+    ],
+  },
+  {
+    title: "Professional Skills",
+    icon: "PS",
+    items: [
+      "Analytical Thinking",
+      "Critical Thinking",
+      "Research Skills",
+      "Communication",
+      "Time Management",
+      "Self-Directed Learning",
+    ],
+  },
+];
+
+const SERVICES = [
+  {
+    title: "Modern Web Development",
+    text: "I build clean, responsive websites and web apps that are simple to use and fast to load.",
+    icon: "</>",
+  },
+  {
+    title: "Solving Problems with AI Tools",
+    text: "I use AI tools with clear prompts to speed up coding, design and research, and I always review the result myself.",
+    icon: "AI",
+  },
+  {
+    title: "MS Office & Computer Work",
+    text: "Word, Excel, PowerPoint and everyday computer tasks are things I handle comfortably.",
+    icon: "PC",
+  },
+];
+
+type Project = {
+  title: string;
+  category: "AI" | "Web App";
+  image: string;
+  desc: string;
+  tech: string[];
+  github: string;
+  live: string;
+  date: string;
+};
+
+const PROJECTS: Project[] = [
+  {
+    title: "Custos AI",
+    category: "AI",
+    image: "/projects/custos.png",
+    desc: "An AI-powered cybersecurity platform that checks suspicious URLs, phishing emails and scam messages, then gives a risk assessment, recommendations and a downloadable report.",
+    tech: ["AI", "Cybersecurity", "Web App"],
+    github: "https://github.com/professorharis/custos.ai",
+    live: "https://getcustos.vercel.app",
+    date: "Sep 2026 – Present",
+  },
+  {
+    title: "Convertify Pro",
+    category: "Web App",
+    image: "/projects/convertify.png",
+    desc: "A universal file conversion platform. Convert documents and images between many formats through a simple, user-friendly interface.",
+    tech: ["Web App", "File Conversion", "Frontend"],
+    github: "https://github.com/professorharis/convertify",
+    live: "https://convertify-pro.vercel.app/",
+    date: "Jan 2026 – Feb 2026",
+  },
+  {
+    title: "Enhance Me",
+    category: "Web App",
+    image: "/projects/enhance.png",
+    desc: "A web-based image utility for background removal, resizing, compression, format conversion and other image-processing tasks.",
+    tech: ["Web App", "Image Processing", "Frontend"],
+    github: "https://github.com/professorharis/enhance-me",
+    live: "https://enhance-me.vercel.app/",
+    date: "Oct 2025 – Nov 2025",
+  },
+];
+
+const EDUCATION = [
+  {
+    title: "Secondary School Certificate (Matric)",
+    place: "Govt Model Higher Secondary School Ghanzi Baig, District Mohmand",
+    period: "2023 – 2024",
+    result: "1014 marks",
+    grade: "Grade A1 · Science",
+  },
+  {
+    title: "F.Sc Computer Science",
+    place: "Government Higher Secondary School Ghallanai",
+    period: "2024 – 2026",
+    result: "870 / 1200",
+    grade: "Grade A",
+  },
+  {
+    title: "Diploma in Information Technology (DIT)",
+    place: "Govt. College of Management Sciences Ghallanai, Mohmand",
+    period: "2025 – 2026",
+    result: "792 / 1000",
+    grade: "Grade A",
+  },
+];
+
+// DIT certificate removed (it is already listed under Education)
+const CERTIFICATES = [
+  {
+    title: "Digital Skills: Artificial Intelligence",
+    issuer: "Accenture / FutureLearn",
+    date: "25 March 2026",
+    about: "Fundamentals of AI, including key concepts, real-world applications and digital skills.",
+    image: "/certs/accenture.png",
+    pdf: "/certs/accenture.pdf",
+  },
+  {
+    title: "Ethical Hacking and Cybersecurity",
+    issuer: "Khyber Pakhtunkhwa Skills Development Program",
+    date: "Online course",
+    about: "Basics of ethical hacking, cybersecurity and core security concepts.",
+    image: "/certs/cybersecurity.png",
+    pdf: "/certs/cybersecurity.pdf",
+  },
+  {
+    title: "AI and Data Science for Beginners",
+    issuer: "Khyber Pakhtunkhwa Skills Development Program",
+    date: "Online course",
+    about: "Fundamentals of AI, machine learning and data science with practical applications.",
+    image: "/certs/ai-ds.png",
+    pdf: "/certs/ai-ds.pdf",
+  },
+];
+
+/* ==================================================================== */
+/*  THEME                                                                */
+/* ==================================================================== */
+
+const RED = "#e8434a";
+const RED_DARK = "#c9333a";
+const NAVY = "#0b1324";
+const HERO_BG = "#1a1f27";
+
+/* ==================================================================== */
+/*  HELPERS                                                              */
+/* ==================================================================== */
+
+function useTyping(text: string, speed = 90) {
+  const [out, setOut] = useState("");
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
-  return prefersReducedMotion;
-};
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setOut(text.slice(0, i));
+      if (i >= text.length) clearInterval(id);
+    }, speed);
+    return () => clearInterval(id);
+  }, [text, speed]);
+  return out;
+}
 
-// -----------------------------------------------------------------------------
-// Skip to content link (accessibility)
-// -----------------------------------------------------------------------------
-const SkipLink = () => (
-  <a
-    href="#main-content"
-    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] bg-[#FF4D1C] text-white px-4 py-2 rounded-md"
-  >
-    Skip to main content
-  </a>
-);
-
-// -----------------------------------------------------------------------------
-// Navigation Bar (improved accessibility)
-// -----------------------------------------------------------------------------
-export const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const closeMenu = () => setIsMenuOpen(false);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeMenu();
-      if (e.key === "Tab" && menuRef.current) {
-        const focusable = menuRef.current.querySelectorAll(
-          'a, button, [tabindex="0"]'
-        );
-        if (focusable.length === 0) return;
-        const first = focusable[0] as HTMLElement;
-        const last = focusable[focusable.length - 1] as HTMLElement;
-        if (e.shiftKey && document.activeElement === first) {
-          last.focus();
-          e.preventDefault();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          first.focus();
-          e.preventDefault();
-        }
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    closeBtnRef.current?.focus();
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isMenuOpen]);
-
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Service", href: "#services" },
-    { name: "Resume", href: "#resume" },
-    { name: "Project", href: "#portfolio" },
-    { name: "Contact Us", href: "#contact" },
-  ];
-
+function SectionTitle({
+  title,
+  sub,
+  light = false,
+}: {
+  title: string;
+  sub?: string;
+  light?: boolean;
+}) {
   return (
-    <>
-      <SkipLink />
-      <nav className="fixed top-6 left-0 right-0 z-[60] flex justify-center px-4">
-        <div className="bg-[#1A1A1A] text-white rounded-full px-2 py-2 pl-6 pr-2 flex items-center gap-8 shadow-2xl max-w-5xl w-full justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label="Home">
-            <div className="w-8 h-8 bg-[#FF4D1C] rounded-full flex items-center justify-center font-bold text-white">
-              A
-            </div>
-            <span className="font-bold text-lg">{CONFIG.name}</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-            {navLinks.map((link) => (
-              <a key={link.name} href={link.href} className="hover:text-[#FF4D1C] transition-colors">
-                {link.name}
-              </a>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="#contact"
-              className="hidden md:block bg-transparent text-white text-sm font-medium hover:text-[#FF4D1C]"
-            >
-              Let's talk us
-            </a>
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-2 text-white focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded-full"
-              aria-label="Toggle menu"
-              aria-expanded={isMenuOpen}
-            >
-              <Menu size={18} />
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] md:hidden bg-black/50 backdrop-blur-sm"
-            onClick={closeMenu}
-          >
-            <motion.div
-              ref={menuRef}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 h-full w-64 bg-[#1A1A1A] shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-label="Mobile navigation menu"
-            >
-              <div className="flex justify-end p-6">
-                <button
-                  ref={closeBtnRef}
-                  onClick={closeMenu}
-                  className="text-white p-2 hover:text-[#FF4D1C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded-full"
-                  aria-label="Close menu"
-                >
-                  <X size={28} />
-                </button>
-              </div>
-              <div className="flex flex-col items-center justify-start px-6 -mt-4">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    onClick={closeMenu}
-                    className="text-white text-lg font-bold py-3 w-full text-center hover:text-[#FF4D1C] transition-colors border-b border-gray-800 last:border-0 focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]"
-                  >
-                    {link.name}
-                  </a>
-                ))}
-                <a
-                  href="#contact"
-                  onClick={closeMenu}
-                  className="mt-6 bg-[#FF4D1C] text-white px-6 py-3 rounded-full font-bold text-base w-full text-center hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                >
-                  Let's talk us
-                </a>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Hero Section 
-// -----------------------------------------------------------------------------
-const Hero = () => {
-  const arrowSettings = {
-    width: 70,
-    height: 70,
-    gap: "7px",
-    verticalOffset: "-14px",
-    color: "#1A1A1A",
-    thickness: 3.3,
-    animationDelay: 0.5,
-  };
-
-  return (
-    <section id="home" className="pt-25 pb-0 bg-white relative overflow-hidden flex flex-col items-center">
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative mb-2 border border-gray-200 px-6 py-2 rounded-full shadow-sm bg-white z-10">
-        <span className="font-medium text-gray-800 text-sm">Hello!</span>
-        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-gray-200 rotate-45"></div>
-      </motion.div>
-
-<motion.h1 
-  initial={{ y: 30, opacity: 0 }} 
-  animate={{ y: 0, opacity: 1 }} 
-  className="text-3xl md:text-[4rem] font-semibold text-[#1A1A1A] text-center leading-[1.1] z-0 relative tracking-tight px-4 mt-3 md:mt-9 mb-1 md:mb-18 max-w-7xl mx-auto"
->
-  I'm <span className="text-[#FF4D1C]">{CONFIG.name}</span>,<br /> Next.js Expert
-</motion.h1>
-      <div className="relative w-full max-w-6xl mx-auto flex justify-center items-end h-[400px] md:h-[550px] -mt-30 md:-mt-40">
-        <div className="absolute top-[20%] left-6 md:left-12 z-10 hidden lg:block">
-          <Quote className="text-[#1A1A1A] mb-2 fill-current rotate-180" size={24} />
-          <p className="text-[13px] font-medium text-gray-500 max-w-[190px]">I build high-performance web applications using Next.js.</p>
-          <div className="mt-4 font-bold text-2xl text-[#1A1A1A]">05+ <span className="text-xs font-normal text-gray-400 block">Client Served</span></div>
-        </div>
-
-        <div className="absolute top-[20%] right-6 md:right-12 text-right z-10 hidden lg:block">
-          <div className="flex gap-1 justify-end mb-2">
-            {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} className="fill-[#FF4D1C] text-[#FF4D1C]" />)}
-          </div>
-          <div className="font-bold text-2xl text-[#1A1A1A]">Next.js</div>
-          <span className="text-gray-400 text-xs border-t border-gray-200 pt-1 inline-block min-w-[100px]">Expertise</span>
-        </div>
-
-        <div className="absolute bottom-0 w-[280px] h-[140px] md:w-[480px] md:h-[270px] bg-[#FF4D1C] rounded-t-full z-10"></div>
-        <motion.div initial={{ y: 50 }} animate={{ y: 0 }} className="relative z-20 w-[280px] md:w-[480px]">
-          <img src="/amir.png" alt={CONFIG.name} className="w-full h-auto object-contain" />
-        </motion.div>
-
-        <div className="absolute bottom-[40px] md:bottom-[60px] z-50 flex gap-4 justify-center items-center">
-          <div className="relative">
-            <div 
-              className="absolute right-full top-1/2 pointer-events-none hidden md:block"
-              style={{ 
-                marginRight: arrowSettings.gap, 
-                marginTop: arrowSettings.verticalOffset,
-                width: arrowSettings.width,
-                height: arrowSettings.height,
-                transform: "translateY(-50%)" 
-              }}
-            >
-              <motion.svg 
-                width="100%" 
-                height="100%" 
-                viewBox="0 0 100 60" 
-                fill="none" 
-                initial="hidden"
-                animate="visible"
-              >
-                <motion.path
-                  d="M 5 5 C 5 35, 25 50, 95 50"
-                  stroke={arrowSettings.color}
-                  strokeWidth={arrowSettings.thickness}
-                  strokeLinecap="round"
-                  variants={{
-                    hidden: { pathLength: 0, opacity: 0 },
-                    visible: { 
-                      pathLength: 1, 
-                      opacity: 1,
-                      transition: { duration: 0.8, delay: arrowSettings.animationDelay } 
-                    }
-                  }}
-                />
-                <motion.path
-                  d="M 80 40 L 95 50 L 80 60"
-                  stroke={arrowSettings.color}
-                  strokeWidth={arrowSettings.thickness}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: { opacity: 1, transition: { delay: arrowSettings.animationDelay + 0.7 } }
-                  }}
-                />
-              </motion.svg>
-            </div>
-            <a 
-              href="#portfolio" 
-              className="bg-[#FF4D1C] text-white px-5 md:px-10 py-3 md:py-3.5 rounded-full font-bold text-sm border-2 border-white shadow-[0_0_20px_rgba(255,77,28,0.4)] hover:scale-105 transition-transform duration-300 block"
-            >
-              Portfolio
-            </a>
-          </div>
-          <a href="#contact" className="bg-white text-black px-5 md:px-10 py-3 md:py-3.5 rounded-full font-bold text-sm border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.6)] hover:bg-gray-50 transition">
-            Hire Me
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Services Section (images with fill)
-// -----------------------------------------------------------------------------
-const Services = () => {
-  return (
-    <section id="services" className="bg-[#1A1A1A] w-full rounded-t-[2rem] md:rounded-t-[3rem] pt-24 pb-20 px-4 md:px-6">
-      <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 md:mb-16 gap-6">
-          <h2 className="text-3xl md:text-5xl font-semibold">
-            <span className="text-white">My </span>
-            <span className="text-[#FF4D1C]">Services</span>
-          </h2>
-          <p className="text-gray-400 max-w-md text-sm md:text-base leading-relaxed md:text-right">
-            I build high-performance, SEO-optimized, and fully responsive websites using Next.js to help your business stand out.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {services.map((service, idx) => {
-            const isCenter = idx === 1;
-            return (
-              <div
-                key={idx}
-                className={`relative rounded-3xl p-6 md:p-8 flex flex-col group transition-all duration-500 hover:-translate-y-2 ${
-                  isCenter ? "text-white" : "bg-[#2A2A2A] text-white hover:bg-[#303030]"
-                }`}
-                style={isCenter ? { background: "linear-gradient(to bottom, #FF4D1C 0%, #FF4D1C 30%, #2A2A2A 70%, #2A2A2A 100%)" } : {}}
-              >
-                <h3 className={`text-xl md:text-2xl font-semibold mb-8 ${isCenter ? "text-white" : "text-white"}`}>
-                  {service.title}
-                </h3>
-                <div className="relative mt-auto">
-                  <div className="relative rounded-2xl overflow-hidden h-48 md:h-56 w-full shadow-lg bg-white/5">
-                    <Image
-                      src={service.image}
-                      alt={service.title}
-                      fill
-                      className="object-cover object-top opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  </div>
-                  <Link
-                    href={service.link}
-                    className={`absolute -bottom-4 -right-4 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-110 border-[6px] ${
-                      isCenter ? "bg-[#FF4D1C] text-white border-[#2A2A2A]" : "bg-[#3A3A3A] text-white border-[#2A2A2A] group-hover:border-[#303030]"
-                    }`}
-                    aria-label={`View ${service.title} details`}
-                  >
-                    <ArrowUpRight size={24} strokeWidth={2.5} />
-                  </Link>
-                </div>
-                {service.desc && (
-                  <p className={`mt-6 text-sm line-clamp-2 ${isCenter ? "text-white/90" : "opacity-80"}`}>
-                    {service.desc}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Work Experience (Resume)
-// -----------------------------------------------------------------------------
-const WorkExperience = () => {
-  return (
-    <section id="resume" className="bg-white py-16 md:py-24 px-4 md:px-6">
-      <div className="container mx-auto max-w-4xl">
-        <h2 className="text-2xl md:text-4xl font-bold text-center text-[#1A1A1A] mb-12 md:mb-16">
-          My Work Experience
-        </h2>
-        <div className="relative">
-          <div className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-[1px] bg-gray-200 md:-translate-x-1/2"></div>
-          <div className="space-y-10 md:space-y-12">
-            {experience.map((exp, i) => (
-              <div key={i} className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-0 relative">
-                <div className="absolute left-[13px] md:left-1/2 w-4 h-4 bg-[#FF4D1C] rounded-full border-4 border-white shadow-sm z-10 md:-translate-x-1/2 mt-1 md:mt-0"></div>
-                <div className={`pl-12 md:pl-0 md:w-1/2 md:pr-12 ${i % 2 !== 0 ? "md:order-2 md:pl-12 md:pr-0 md:text-left" : "md:text-right"}`}>
-                  <h3 className="font-bold text-lg md:text-xl text-[#1A1A1A]">{exp.company}</h3>
-                  <p className="text-xs md:text-sm text-gray-500">{exp.date}</p>
-                </div>
-                <div className={`pl-12 md:pl-0 md:w-1/2 md:pl-12 ${i % 2 !== 0 ? "md:order-1 md:pr-12 md:pl-0 md:text-right" : "md:text-left"}`}>
-                  <h4 className="font-bold text-base md:text-lg text-[#1A1A1A]">{exp.role}</h4>
-                  <p className="text-xs md:text-sm text-gray-500 mt-1 max-w-xs">{exp.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Why Hire Me (About) – optimized image with fill
-// -----------------------------------------------------------------------------
-const WhyHireMe = () => {
-  return (
-    <section id="about" className="bg-[#F9FAFB] py-16 md:py-24 px-4 md:px-6">
-      <div className="container mx-auto max-w-6xl flex flex-col lg:flex-row items-center gap-10 md:gap-16">
-        <div className="w-full lg:w-1/2 relative flex justify-center">
-          <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px]">
-            <div className="absolute inset-0 bg-[#FF4D1C] rounded-full"></div>
-            <div
-              className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-16 h-16 sm:w-24 sm:h-24 opacity-50"
-              style={{
-                backgroundImage: "radial-gradient(#1A1A1A 2px, transparent 2px)",
-                backgroundSize: "12px 12px",
-              }}
-              aria-hidden="true"
-            ></div>
-            <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-2xl">
-              <Image
-                src="/amir2.png"
-                alt={CONFIG.name}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 280px, 400px"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full lg:w-1/2 text-center lg:text-left">
-          <h2 className="text-3xl md:text-5xl font-bold text-[#1A1A1A] mb-4 md:mb-6 leading-tight">
-            Why You <span className="text-[#FF4D1C]">Hire Me</span> for
-            <br /> Your Next Projects?
-          </h2>
-          <p className="text-sm md:text-base text-gray-500 mb-8 md:mb-10 leading-relaxed px-2 lg:px-0">
-            Hi, I'm Amir, a Next.js developer focused on building high-performance, scalable web applications that blend modern design with real-world functionality.
-            From business websites and SaaS platforms to restaurant systems and custom web tools, I craft digital solutions designed to perform efficiently, scale seamlessly and drive meaningful business growth.
-          </p>
-
-          <div className="grid grid-cols-2 gap-4 md:gap-8 mb-8 md:mb-10 max-w-xs mx-auto lg:mx-0">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">05+</h3>
-              <p className="text-xs md:text-sm text-gray-500">Premium Projects</p>
-            </div>
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">100%</h3>
-              <p className="text-xs md:text-sm text-gray-500">Next.js Specialist</p>
-            </div>
-          </div>
-
-          <a
-            href="#contact"
-            className="inline-block border border-[#FF4D1C] text-[#FF4D1C] px-6 md:px-8 py-2 md:py-3 rounded-full font-bold hover:bg-[#FF4D1C] hover:text-white transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]"
-          >
-            Hire Me
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Portfolio Section (images with fill)
-// -----------------------------------------------------------------------------
-const Portfolio = () => {
-  const [showAll, setShowAll] = useState(false);
-  const thirdProjectRef = useRef<HTMLDivElement>(null);
-
-  const handleShowMore = () => {
-    if (!showAll) {
-      setShowAll(true);
-      setTimeout(() => {
-        thirdProjectRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 100);
-    }
-  };
-
-  return (
-    <section id="portfolio" className="bg-white py-16 md:py-24 px-4 md:px-6">
-      <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 md:mb-10">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">Let's Have a Look at</h2>
-            <h2 className="text-2xl md:text-3xl font-bold text-[#FF4D1C]">my Portfolio</h2>
-          </div>
-          <div className="hidden md:block">
-            {!showAll && (
-              <button
-                onClick={handleShowMore}
-                className="bg-[#FF4D1C] text-white px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 hover:bg-orange-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
-              >
-                See More <ArrowUpRight size={14} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex md:grid md:grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory md:snap-none">
-          {portfolio.map((item, i) => {
-            const isThird = i === 2;
-            return (
-              <div
-                key={i}
-                ref={isThird ? thirdProjectRef : null}
-                className={`group flex-shrink-0 w-[280px] sm:w-[320px] md:w-auto snap-start ${
-                  isThird && !showAll ? 'md:hidden' : ''
-                }`}
-              >
-                <div className="relative bg-[#F3F4F6] rounded-[2rem] overflow-hidden h-[300px] md:h-[400px] shadow-lg">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-cover transform group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="absolute bottom-4 right-4 md:bottom-6 md:right-6 w-10 h-10 md:w-12 md:h-12 bg-[#FF4D1C] rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 shadow-lg focus:opacity-100 focus:translate-y-0"
-                    aria-label={`View ${item.title} project (opens new tab)`}
-                  >
-                    <ArrowRight size={18} />
-                  </a>
-                </div>
-                <div className="flex gap-2 mb-2 md:mb-3 mt-4 flex-wrap">
-                  {item.tags.map((tag) => (
-                    <span key={tag} className="px-2 md:px-3 py-1 bg-gray-100 text-xs font-medium text-gray-600 rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-[#1A1A1A] flex items-center gap-2">
-                  <a href={item.link} target="_blank" rel="noopener noreferrer" className="hover:text-[#FF4D1C] focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">
-                    {item.title}
-                  </a>
-                  <span className="text-[#FF4D1C]" aria-hidden="true">
-                    <ArrowUpRight size={16} className="inline bg-[#FF4D1C] text-white rounded-full p-0.5" />
-                  </span>
-                </h3>
-                <p className="text-gray-500 text-xs md:text-sm mt-2 max-w-md">{item.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Testimonials Section (inline)
-// -----------------------------------------------------------------------------
-const Testimonials = () => {
-  const reviews = [
-    {
-      name: "Alex Rivera",
-      role: "E-commerce Owner",
-      quote: "Amir is a Next.js wizard. He transformed our slow landing page into a lightning-fast experience. His technical skills are top-notch!",
-      img: "https://randomuser.me/api/portraits/men/32.jpg"
-    },
-    {
-      name: "Sarah Chen",
-      role: "SaaS Founder",
-      quote: "Working with Amir on our tool integration was a breeze. He understands modern UI and performance better than most developers I've met.",
-      img: "https://randomuser.me/api/portraits/women/44.jpg"
-    }
-  ];
-
-  return (
-    <section className="bg-[#1A1A1A] py-16 md:py-24 px-4 md:px-6 text-white text-center">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-10 md:mb-12 relative inline-block">
-          <h2 className="text-2xl md:text-4xl font-bold">Client Success</h2>
-          <h2 className="text-2xl md:text-4xl font-bold text-[#FF4D1C]">Stories & Feedback</h2>
-          <div className="absolute -top-4 -right-4 md:-top-6 md:-right-8">
-            <Quote size={24} className="text-gray-600 rotate-12 opacity-50" />
-          </div>
-          <div className="absolute -bottom-4 -left-4 md:-bottom-6 md:-left-8">
-            <Star size={20} className="text-white opacity-50" />
-          </div>
-        </div>
-        
-        <p className="text-gray-400 mb-12 md:mb-16 max-w-lg mx-auto text-xs md:text-sm">
-          I take pride in delivering high-quality digital products. Here is what some of my 
-          collaborators have to say about our work together.
+    <div className="mb-12 text-center">
+      <h2 className={`text-3xl font-semibold md:text-4xl ${light ? "text-white" : "text-slate-900"}`}>
+        {title}
+      </h2>
+      <div className="mx-auto mt-3 h-[3px] w-14 rounded" style={{ background: RED }} />
+      {sub && (
+        <p
+          className={`mx-auto mt-4 max-w-xl text-sm leading-relaxed ${
+            light ? "text-slate-300" : "text-slate-500"
+          }`}
+        >
+          {sub}
         </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-left">
-          {reviews.map((review, i) => (
-            <div key={i} className="bg-[#262626] p-6 md:p-8 rounded-2xl relative border border-gray-800">
-              <div className="flex gap-1 mb-3 md:mb-4">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={12} className="fill-[#FF4D1C] text-[#FF4D1C]" />
-                ))}
-                <span className="ml-2 text-xs font-bold">5.0</span>
-              </div>
-              <p className="text-gray-300 text-xs md:text-sm mb-6 md:mb-8 leading-relaxed">
-                "{review.quote}"
-              </p>
-              <div className="flex items-center gap-3">
-                <img src={review.img} className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700" alt={review.name} />
-                <div>
-                  <h4 className="font-bold text-xs md:text-sm">{review.name}</h4>
-                  <p className="text-xs text-gray-500">{review.role}</p>
-                </div>
-                <Quote className="ml-auto text-gray-700" size={24} />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-center gap-2 mt-6 md:mt-8">
-          <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-          <div className="w-2 h-2 rounded-full bg-[#FF4D1C]"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// CTA Section with Modal (focus trap, accessible form)
-// -----------------------------------------------------------------------------
-const CTA = () => {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
-  const modalRef = useRef<HTMLDivElement>(null);
-  const prevFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (!modalOpen) return;
-    prevFocusRef.current = document.activeElement as HTMLElement;
-    const focusable = modalRef.current?.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (focusable?.length) {
-      (focusable[0] as HTMLElement).focus();
-    }
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeModal();
-      if (e.key === "Tab" && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements.length === 0) return;
-        const first = focusableElements[0] as HTMLElement;
-        const last = focusableElements[focusableElements.length - 1] as HTMLElement;
-        if (e.shiftKey && document.activeElement === first) {
-          last.focus();
-          e.preventDefault();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          first.focus();
-          e.preventDefault();
-        }
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      prevFocusRef.current?.focus();
-    };
-  }, [modalOpen]);
-
-  const handleSendClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setName('');
-    setMessage('');
-  };
-
-  const handleModalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
-
-    setStatus('loading');
-    setModalOpen(false);
-
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('name', name);
-    formData.append('message', message);
-
-    try {
-      const res = await fetch(CONFIG.formspreeUrl, {
-        method: 'POST',
-        body: formData,
-        headers: { Accept: 'application/json' },
-      });
-
-      if (res.ok) {
-        setStatus('success');
-        setEmail('');
-        setName('');
-        setMessage('');
-        setTimeout(() => setStatus('idle'), 3000);
-      } else {
-        setStatus('error');
-        setTimeout(() => setStatus('idle'), 3000);
-      }
-    } catch {
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
-    }
-  };
-
-  return (
-    <section className="bg-white pt-16 md:pt-24 pb-8 md:pb-12 px-4 md:px-6">
-      <div className="container mx-auto max-w-5xl text-center">
-        <h2 className="text-2xl md:text-5xl font-bold text-[#1A1A1A] mb-2">
-          Have An Awesome Project
-        </h2>
-        <h2 className="text-2xl md:text-5xl font-bold text-[#1A1A1A] mb-6 md:mb-8">
-          Idea? <span className="text-[#FF4D1C]">Let's Discuss</span>
-        </h2>
-
-        <div className="relative max-w-xl mx-auto mb-8 md:mb-12 px-2">
-          <div className="flex items-center bg-white border border-gray-200 rounded-full shadow-lg p-1 pl-4 md:p-2 md:pl-6">
-            <div className="p-1 md:p-2 bg-[#FFEAE4] rounded-full text-[#FF4D1C]" aria-hidden="true">
-              <Mail size={16} />
-            </div>
-            <label htmlFor="cta-email" className="sr-only">Email address</label>
-            <input
-              id="cta-email"
-              type="email"
-              placeholder="Enter Email Address"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={status === 'loading'}
-              className="flex-1 outline-none px-2 md:px-4 text-xs md:text-sm text-gray-700 placeholder:text-gray-400"
-            />
-            <button
-              onClick={handleSendClick}
-              disabled={status === 'loading' || !email.trim()}
-              className="bg-[#FF4D1C] text-white px-4 md:px-6 py-2 md:py-3 rounded-full text-xs md:text-sm font-bold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]"
-            >
-              {status === 'loading' ? 'Sending...' : 'Send'}
-            </button>
-          </div>
-
-          {status === 'success' && (
-            <p className="text-green-600 text-xs mt-2 text-center" role="status">
-              Message received! Amir will contact you soon.
-            </p>
-          )}
-          {status === 'error' && (
-            <p className="text-red-500 text-xs mt-2 text-center" role="alert">
-              Something went wrong. Please try again.
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-xs font-bold text-gray-600 uppercase tracking-wide">
-          <span className="flex items-center gap-1 md:gap-2">
-            <CheckCircle2 size={14} className="text-[#FF4D1C]" aria-hidden="true" /> 100% Job Success
-          </span>
-          <span className="flex items-center gap-1 md:gap-2">
-            <CheckCircle2 size={14} className="text-[#FF4D1C]" aria-hidden="true" /> Open Source Contributor
-          </span>
-          <span className="flex items-center gap-1 md:gap-2">
-            <CheckCircle2 size={14} className="text-[#FF4D1C]" aria-hidden="true" /> Modern Frontend Developer
-          </span>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {modalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
-            onClick={closeModal}
-            aria-modal="true"
-            role="dialog"
-            aria-label="Project discussion form"
-          >
-            <motion.div
-              ref={modalRef}
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded-full"
-                aria-label="Close modal"
-              >
-                <X size={20} />
-              </button>
-              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">Let's discuss your project</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Your email address: <span className="font-medium text-[#FF4D1C]">{email}</span>
-              </p>
-              <form onSubmit={handleModalSubmit}>
-                <div className="mb-4">
-                  <label htmlFor="modal-name" className="block text-xs font-medium text-gray-600 mb-1">
-                    Your name
-                  </label>
-                  <input
-                    id="modal-name"
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]/50"
-                    placeholder="e.g. John Smith"
-                  />
-                </div>
-                <div className="mb-6">
-                  <label htmlFor="modal-message" className="block text-xs font-medium text-gray-600 mb-1">
-                    Project Details
-                  </label>
-                  <textarea
-                    id="modal-message"
-                    required
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={3}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]/50"
-                    placeholder="Tell me about your project..."
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={status === 'loading'}
-                  className="w-full bg-[#FF4D1C] text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]"
-                >
-                  {status === 'loading' ? 'Sending...' : 'Send Message'}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
-  );
-};
-
-// -----------------------------------------------------------------------------
-// Pure CSS Angled Marquee (no framer-motion)
-// -----------------------------------------------------------------------------
-const AngledMarquee = () => {
-  return (
-    <div className="relative py-6 md:py-8 overflow-hidden bg-white mb-12 md:mb-16">
-      <div className="absolute inset-0 flex items-center justify-center transform -rotate-1 scale-105 bg-[#FF4D1C] py-3 md:py-4 shadow-xl z-10">
-        <div className="marquee whitespace-nowrap flex gap-4 md:gap-8 text-white font-bold text-sm md:text-xl uppercase tracking-widest items-center">
-          {[...Array(4)].map((_, i) => (
-            <React.Fragment key={i}>
-              <span>Next.js</span> <span className="text-black" aria-hidden="true">•</span>
-              <span>React</span> <span className="text-black" aria-hidden="true">•</span>
-              <span>Full-Stack</span> <span className="text-black" aria-hidden="true">•</span>
-              <span>SaaS Apps</span> <span className="text-black" aria-hidden="true">•</span>
-              <span>Tailwind CSS</span> <span className="text-black" aria-hidden="true">•</span>
-              <span>Web Utilities</span> <span className="text-black" aria-hidden="true">•</span>
-              <span>Clean Code</span> <span className="text-black" aria-hidden="true">•</span>
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-      <style jsx>{`
-        .marquee {
-          animation: scroll 20s linear infinite;
-        }
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .marquee {
-            animation: none;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
+      )}
     </div>
   );
-};
+}
 
-// -----------------------------------------------------------------------------
-// Blog Section (images with fill)
-// -----------------------------------------------------------------------------
-const Blog = () => {
+function SafeImage({
+  src,
+  alt,
+  label,
+  className = "",
+  contain = false,
+}: {
+  src: string;
+  alt: string;
+  label?: string;
+  className?: string;
+  contain?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div
+        role="img"
+        aria-label={alt}
+        className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-600 text-center text-white ${className}`}
+      >
+        <span className="px-4 text-sm font-medium opacity-90">{label ?? alt}</span>
+      </div>
+    );
+  }
   return (
-    <section id="blog" className="bg-white pb-16 md:pb-24 px-4 md:px-6">
-      <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 md:mb-12 gap-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">From my</h2>
-            <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">blog post</h2>
-          </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className={`${contain ? "object-contain" : "object-cover"} ${className}`}
+    />
+  );
+}
+
+/* ==================================================================== */
+/*  PAGE                                                                 */
+/* ==================================================================== */
+
+export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [active, setActive] = useState("home");
+  const [scrolled, setScrolled] = useState(false);
+  const [filter, setFilter] = useState<"All" | Project["category"]>("All");
+  const [openCert, setOpenCert] = useState<number | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const typedName = useTyping(PROFILE.heroName);
+
+  const STATS = [
+    { value: String(PROJECTS.length), label: "Projects built" },
+    { value: String(CERTIFICATES.length), label: "Certificates" },
+    { value: String(EDUCATION.length), label: "Education levels" },
+  ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => e.isIntersecting && setActive(e.target.id));
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    NAV.forEach(([, id]) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    const onScroll = () => setScrolled(window.scrollY > 500);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (openCert === null) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenCert(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openCert]);
+
+  const visibleProjects = PROJECTS.filter((p) => filter === "All" || p.category === filter);
+
+  const validEmail = /^\S+@\S+\.\S+$/.test(form.email);
+  const canSend = form.name.trim() && validEmail && form.message.trim().length > 5;
+
+  const sendMessage = async () => {
+    if (!canSend) return;
+    if (!FORM_ENDPOINT) {
+      const subject = encodeURIComponent(`Portfolio message from ${form.name}`);
+      const body = encodeURIComponent(`${form.message}\n\nFrom: ${form.name} (${form.email})`);
+      window.location.href = `mailto:${PROFILE.email}?subject=${subject}&body=${body}`;
+      setStatus("sent");
+      return;
+    }
+    try {
+      setStatus("sending");
+      const res = await fetch(FORM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("sent");
+      setForm({ name: "", email: "", message: "" });
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  const inputCls =
+    "w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#e8434a] focus:ring-2 focus:ring-[#e8434a]/20";
+
+  return (
+    <main className="min-h-screen scroll-smooth bg-white text-slate-800 antialiased">
+      <a
+        href="#about"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm"
+      >
+        Skip to content
+      </a>
+
+      {/* top info bar */}
+      <div className="hidden text-xs text-white sm:block" style={{ background: RED_DARK }}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-2">
+          <span className="flex items-center gap-2">
+            <Mail size={14} /> {PROFILE.email}
+          </span>
+          <span className="flex items-center gap-2">
+            <MapPin size={14} /> {PROFILE.location}
+          </span>
+        </div>
+      </div>
+
+      {/* header */}
+      <header className="sticky top-0 z-50 shadow-md" style={{ background: RED }}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
+          <a href="#home" className="text-2xl font-bold tracking-tight text-white">
+            Haris<span className="text-white/60">.</span>
+          </a>
+
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+            {NAV.map(([label, id]) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                aria-current={active === id ? "page" : undefined}
+                className={`rounded px-3 py-2 text-sm font-medium transition ${
+                  active === id ? "bg-white/20 text-white" : "text-white/85 hover:text-white"
+                }`}
+              >
+                {label}
+              </a>
+            ))}
+            <a
+              href="#contact"
+              className="ml-3 rounded bg-white px-4 py-2 text-sm font-semibold transition hover:bg-slate-100"
+              style={{ color: RED }}
+            >
+              Hire Me
+            </a>
+          </nav>
+
+          <button
+            className="rounded p-1 text-white lg:hidden"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X size={26} /> : <Menu size={26} />}
+          </button>
         </div>
 
-        <div className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory md:snap-none">
-          {blogs.map((blog, i) => (
-            <div key={i} className="group cursor-pointer flex-shrink-0 w-[260px] sm:w-[300px] md:w-auto snap-start">
-              <div className="relative mb-3 md:mb-4">
-                <div className="relative rounded-2xl overflow-hidden h-48 md:h-60 w-full shadow-lg bg-white/5">
-                  <Image
-                    src={blog.image}
-                    alt={blog.title}
-                    fill
-                    className="object-cover object-top transform group-hover:scale-110 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
+        {menuOpen && (
+          <nav className="flex flex-col border-t border-white/20 px-5 pb-4 lg:hidden" aria-label="Mobile">
+            {NAV.map(([label, id]) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                onClick={() => setMenuOpen(false)}
+                className={`py-2.5 text-sm font-medium ${active === id ? "text-white" : "text-white/80"}`}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+        )}
+      </header>
+
+     {/* ============================ HOME ============================ */}
+<section
+  id="home"
+  className="relative scroll-mt-16 overflow-hidden text-white"
+  style={{ backgroundColor: HERO_BG }}
+>
+  {/* photo: screen ke bilkul right edge par, poori height */}
+  <div className="pointer-events-none absolute inset-y-0 right-0 w-full opacity-40 md:w-[55%] md:pr-[6%] md:opacity-100">
+  <div className="relative h-full w-full">
+    <SafeImage
+      src={PROFILE.heroPhoto}
+      alt={`Portrait of ${PROFILE.name}`}
+      label="Add your photo at /public/haris-hero.jpg"
+      className="h-full w-full object-contain object-right-bottom"
+    />
+    <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-[#1a1f27] to-transparent" />
+  </div>
+</div>
+  {/* text: left side */}
+  <div className="relative z-10 mx-auto flex min-h-[560px] max-w-6xl flex-col justify-center px-5 py-16 md:min-h-[680px]">
+    <div className="max-w-xl">
+      <p className="text-2xl font-medium" style={{ color: RED }}>
+        Hello!
+      </p>
+      <h1 className="mt-2 text-4xl font-bold leading-tight md:text-6xl">
+        I Am {typedName}
+        <span
+          className="ml-1 inline-block h-[0.9em] w-[2px] translate-y-1 animate-pulse bg-white/70"
+          aria-hidden
+        />
+      </h1>
+      <p className="mt-6 max-w-md text-lg leading-relaxed text-slate-300">
+        A passionate Computer Science student focused on AI, cybersecurity and web
+        development, learning by building real projects.
+      </p>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <a
+          href="#projects"
+          className="rounded-full px-7 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+          style={{ background: "#ff4d55" }}
+        >
+          Projects
+        </a>
+        <a
+          href="#contact"
+          className="rounded-full px-7 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+          style={{ background: "#ff4d55" }}
+        >
+          Contact
+        </a>
+        <a
+          href={PROFILE.github}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+        >
+          <IconGithub size={16} /> GitHub
+        </a>
+      </div>
+
+      <dl className="mt-12 flex flex-wrap gap-x-10 gap-y-4 border-t border-white/10 pt-6">
+        {STATS.map((s) => (
+          <div key={s.label}>
+            <dt className="sr-only">{s.label}</dt>
+            <dd>
+              <span className="text-3xl font-bold text-white">{s.value}</span>
+              <span className="ml-2 text-sm text-slate-400">{s.label}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+      {/* ============================ ABOUT ============================ */}
+      <section id="about" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-20">
+        <div className="grid items-start gap-12 md:grid-cols-[320px_1fr]">
+          <div className="mx-auto w-full max-w-xs overflow-hidden rounded-lg shadow-lg">
+            <div className="h-95 bg-slate-100">
+              <SafeImage
+                src={PROFILE.aboutPhoto}
+                alt={PROFILE.name}
+                label="Add your photo at /public/haris-about.jpg"
+                className="h-full w-full object-top"
+              />
+            </div>
+            <div className="p-5 text-white" style={{ background: RED }}>
+              <p className="text-lg font-semibold">{PROFILE.name}</p>
+              <p className="text-sm text-white/90">{PROFILE.role}</p>
+              <div className="mt-4 flex gap-2">
+                {[
+                  { Ic: IconGithub, href: PROFILE.github, l: "GitHub", color: "#181717" },
+                  { Ic: IconLinkedin, href: PROFILE.linkedin, l: "LinkedIn", color: "#0A66C2" },
+                  { Ic: Mail, href: `mailto:${PROFILE.email}`, l: "Email", color: "#EA4335" },
+                ].map((s) => (
+                  <a
+                    key={s.l}
+                    href={s.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={s.l}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:scale-105"
+                    style={{ backgroundColor: s.color }}
+                  >
+                    <s.Ic size={16} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-3xl font-semibold text-slate-900 md:text-4xl">About me</h2>
+            <div className="mt-3 h-[3px] w-14 rounded" style={{ background: RED }} />
+
+            <div className="mt-6 space-y-4 leading-relaxed text-slate-600">
+              <p>
+                My name is Muhammad Haris and I&apos;m from District Mohmand, Pakistan. I completed my
+                Matric in Science with an A1 grade, then studied F.Sc Computer Science and a Diploma
+                in Information Technology (DIT) at the same time.
+              </p>
+              <p>
+                I&apos;m most interested in Artificial Intelligence, Cybersecurity and Web Development.
+                I don&apos;t just read about them. I build small projects such as Custos AI, Convertify
+                Pro and Enhance Me so that my skills are practical, not only theoretical.
+              </p>
+              <p>
+                My goal is to continue my education internationally, strengthen my technical skills
+                and build technology that helps people solve real problems.
+              </p>
+            </div>
+
+            <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+              {[
+                "F.Sc Computer Science + DIT",
+                "Focus on AI, Cybersecurity & Web Dev",
+                "Learns by building real projects",
+                "Interested in online business & trading",
+              ].map((t) => (
+                <li key={t} className="flex items-start gap-3 text-sm text-slate-700">
+                  <span
+                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: RED }}
+                    aria-hidden
                   />
-                </div>
-                <Link
-                  href={`/blog/${blog.slug}`}
-                  className={`absolute -bottom-4 -right-4 w-10 h-10 md:-bottom-6 md:-right-6 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-110 ${
-                    i === 1 ? 'bg-[#FF4D1C] text-white' : 'bg-[#3A3A3A] text-white'
-                  }`}
+                  {t}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-lg border border-slate-200 p-4">
+                <p className="font-semibold text-slate-900">Languages</p>
+                <p className="mt-1 text-slate-500">Pashto (native), Urdu (B2), English (B1)</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 p-4">
+                <p className="font-semibold text-slate-900">Based in</p>
+                <p className="mt-1 text-slate-500">Mohmand, Pakistan</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================== WHAT I DO ========================== */}
+      <section className="bg-slate-50 py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <SectionTitle title="What I do" sub="The kind of work I do and where I can help." />
+          <div className="grid gap-6 md:grid-cols-3">
+            {SERVICES.map((s) => (
+              <div
+                key={s.title}
+                className="overflow-hidden rounded-lg bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+              >
+                <div
+                  className="flex h-28 items-center justify-center text-4xl font-bold text-white"
+                  style={{ background: `linear-gradient(135deg, ${NAVY}, ${RED})` }}
                 >
-                  <ArrowUpRight size={24} strokeWidth={2.5} />
-                </Link>
-              </div>
-              <h3 className="font-bold text-base md:text-lg text-[#1A1A1A] mb-2 leading-snug group-hover:text-[#FF4D1C] transition-colors">
-                {blog.title}
-              </h3>
-              <div className="flex items-center justify-between mt-3 md:mt-4 border-t border-gray-100 pt-3 md:pt-4">
-                <div className="flex gap-2 text-xs text-gray-500 font-medium">
-                  <span className="text-[#FF4D1C]">• {blog.author}</span>
-                  <span>• {blog.date}</span>
+                  {s.icon}
+                </div>
+                <div className="p-6 text-center">
+                  <h3 className="font-semibold text-slate-900">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500">{s.text}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================ SKILLS ============================ */}
+      <section id="skills" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-20">
+        <SectionTitle title="My skills" sub="What I have learned so far, and what I keep improving." />
+        <div className="grid gap-6 md:grid-cols-3">
+          {SKILL_GROUPS.map((g) => (
+            <div key={g.title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex h-10 w-10 items-center justify-center rounded-md text-xs font-bold text-white"
+                  style={{ background: RED }}
+                >
+                  {g.icon}
+                </span>
+                <h3 className="font-semibold text-slate-900">{g.title}</h3>
+              </div>
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {g.items.map((i) => (
+                  <li
+                    key={i}
+                    className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                  >
+                    {i}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
-      </div>
-    </section>
-  );
-};
+      </section>
 
-// -----------------------------------------------------------------------------
-// Footer
-// -----------------------------------------------------------------------------
-export const Footer = () => {
-  const [email, setEmail] = useState('');
+      {/* =========================== PROJECTS =========================== */}
+      <section id="projects" className="scroll-mt-16 bg-slate-50 py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <SectionTitle
+            title="My recent projects"
+            sub="Real projects I built and deployed. Open the live demo or read the code on GitHub."
+          />
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-
-    const subject = encodeURIComponent('Message from your portfolio');
-    const body = encodeURIComponent(`Sender's email: ${email}\n\n[Please write your message here]`);
-    const mailtoLink = `mailto:${CONFIG.email}?subject=${subject}&body=${body}`;
-
-    window.location.href = mailtoLink;
-    setTimeout(() => setEmail(''), 1000);
-  };
-
-  return (
-    <footer id="contact" className="bg-[#1A1A1A] text-white pt-12 md:pt-20 px-4 md:px-6 pb-4 md:pb-6">
-      <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-center pb-10 md:pb-16 border-b border-gray-800 gap-4">
-          <div>
-            <h2 className="text-2xl md:text-4xl font-bold mb-2 text-center md:text-left">Let's Connect there</h2>
+          <div className="mb-10 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Filter projects">
+            {(["All", "AI", "Web App"] as const).map((f) => (
+              <button
+                key={f}
+                role="tab"
+                aria-selected={filter === f}
+                onClick={() => setFilter(f)}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                  filter === f
+                    ? "text-white shadow"
+                    : "border border-slate-300 bg-white text-slate-600 hover:border-slate-400"
+                }`}
+                style={filter === f ? { background: RED } : undefined}
+              >
+                {f}
+              </button>
+            ))}
           </div>
-          <a
-            href="#contact"
-            className="bg-[#FF4D1C] hover:bg-orange-600 text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-bold flex items-center gap-2 transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-white"
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {visibleProjects.map((p) => (
+              <article
+                key={p.title}
+                className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-md transition hover:shadow-xl"
+              >
+                <div className="relative h-52 overflow-hidden">
+                  <SafeImage
+                    src={p.image}
+                    alt={`${p.title} screenshot`}
+                    label={p.title}
+                    className="h-full w-full transition duration-500 group-hover:scale-105"
+                  />
+                  <div
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 transition focus-within:opacity-100 group-hover:opacity-100"
+                    style={{ background: "rgba(232,67,74,.93)" }}
+                  >
+                    <p className="text-lg font-semibold text-white">{p.title}</p>
+                    <div className="flex gap-2">
+                      <a
+                        href={p.live}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded bg-white px-4 py-2 text-xs font-semibold"
+                        style={{ color: RED }}
+                      >
+                        Live Demo
+                      </a>
+                      <a
+                        href={p.github}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded border border-white px-4 py-2 text-xs font-semibold text-white"
+                      >
+                        GitHub
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 flex-col p-5">
+                  <p className="text-xs text-slate-400">{p.date}</p>
+                  <h3 className="mt-1 text-lg font-semibold text-slate-900">{p.title}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-500">{p.desc}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {p.tech.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded-full border px-3 py-1 text-xs"
+                        style={{ borderColor: RED, color: RED }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex gap-3 border-t border-slate-100 pt-4 text-sm font-semibold">
+                    <a href={p.live} target="_blank" rel="noreferrer" style={{ color: RED }}>
+                      Live Demo
+                    </a>
+                    <span className="text-slate-300">|</span>
+                    <a href={p.github} target="_blank" rel="noreferrer" className="text-slate-700">
+                      GitHub
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =========================== EDUCATION =========================== */}
+      <section id="education" className="mx-auto max-w-4xl scroll-mt-16 px-5 py-20">
+        <SectionTitle title="My education" sub="My academic journey so far." />
+        <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          {EDUCATION.map((e) => (
+            <div
+              key={e.title}
+              className="grid gap-2 p-5 md:grid-cols-[130px_1fr_auto] md:items-center md:gap-6"
+            >
+              <p className="text-sm font-semibold" style={{ color: RED }}>
+                {e.period}
+              </p>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-slate-900">{e.title}</h3>
+                <p className="mt-0.5 text-sm text-slate-500">{e.place}</p>
+              </div>
+              <p className="text-sm font-semibold text-slate-900 md:text-right">
+                {e.result}
+                <span className="block text-xs font-medium text-slate-500">{e.grade}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ========================== CERTIFICATES ========================== */}
+      <section
+        id="certificates"
+        className="scroll-mt-16 py-20"
+        style={{
+          backgroundColor: NAVY,
+          backgroundImage:
+            "linear-gradient(rgba(11,19,36,.94), rgba(11,19,36,.94)), repeating-linear-gradient(45deg, #1e293b 0 2px, transparent 2px 14px)",
+        }}
+      >
+        <div className="mx-auto max-w-6xl px-5">
+          <SectionTitle
+            light
+            title="My certificates"
+            sub="Courses and programs I completed. Click a card to view the certificate."
+          />
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {CERTIFICATES.map((c, i) => (
+              <button
+                key={c.title}
+                onClick={() => setOpenCert(i)}
+                className="group overflow-hidden rounded-xl text-left text-white shadow-xl transition hover:-translate-y-1"
+                style={{ background: "rgba(232,67,74,.9)" }}
+                aria-label={`View certificate: ${c.title}`}
+              >
+                <div className="relative h-60 overflow-hidden bg-slate-900">
+                  <SafeImage
+                    src={c.image}
+                    alt={`${c.title} certificate`}
+                    label="Certificate preview"
+                    className="h-full w-full transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-base font-semibold leading-snug">{c.title}</h3>
+                  <p className="mt-2 text-sm text-white/90">{c.issuer}</p>
+                  <p className="mt-1 text-sm text-white/75">{c.date}</p>
+                  <p className="mt-5 flex items-center gap-2 text-sm font-semibold underline underline-offset-4">
+                    <FileText size={15} /> View certificate
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* certificate viewer (clean image view, no PDF toolbar) */}
+      {openCert !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={CERTIFICATES[openCert].title}
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setOpenCert(null)}
+        >
+          <div
+            className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white"
+            onClick={(e) => e.stopPropagation()}
           >
-            Hire me <ArrowUpRight size={16} />
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+              <div>
+                <h3 className="font-semibold text-slate-900">{CERTIFICATES[openCert].title}</h3>
+                <p className="text-sm text-slate-500">
+                  {CERTIFICATES[openCert].issuer} · {CERTIFICATES[openCert].date}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpenCert(null)}
+                aria-label="Close"
+                className="shrink-0 rounded p-1 text-slate-500 hover:bg-slate-100"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* clean certificate image */}
+            <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-slate-100 p-4">
+              <SafeImage
+                src={CERTIFICATES[openCert].image}
+                alt={`${CERTIFICATES[openCert].title} certificate`}
+                label="Certificate preview not available"
+                contain
+                className="max-h-[66vh] w-auto max-w-full rounded shadow-lg"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-5">
+              <p className="text-sm text-slate-600">{CERTIFICATES[openCert].about}</p>
+              <a
+                href={CERTIFICATES[openCert].pdf}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex shrink-0 items-center gap-2 rounded-md px-4 py-2 text-xs font-semibold text-white"
+                style={{ background: RED }}
+              >
+                <FileText size={14} /> Open PDF
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================== GITHUB =========================== */}
+      <section className="mx-auto max-w-6xl px-5 py-20">
+        <SectionTitle title="GitHub / Code" sub="All my project code lives on GitHub." />
+        <div className="mx-auto flex max-w-2xl flex-col items-center gap-5 rounded-lg border border-slate-200 p-8 text-center shadow-md">
+          <span
+            className="flex h-14 w-14 items-center justify-center rounded-full text-white"
+            style={{ background: NAVY }}
+          >
+            <IconGithub size={24} />
+          </span>
+          <p className="text-slate-600">
+            Browse my repositories to see how my projects are built, and follow my work as I keep
+            learning.
+          </p>
+          <a
+            href={PROFILE.github}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-md px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+            style={{ background: RED }}
+          >
+            Visit my GitHub
           </a>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 py-8 md:py-12">
-          <div className="col-span-1 md:col-span-1 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-4 md:mb-6">
-              <div className="w-8 h-8 bg-[#FF4D1C] rounded-full flex items-center justify-center font-bold text-white">
-                A
+      {/* =========================== CONTACT =========================== */}
+      <section id="contact" className="scroll-mt-16 bg-slate-50 py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <SectionTitle
+            title="Contact me"
+            sub="Have a question, an opportunity or a project idea? Send me a message."
+          />
+          <div className="grid gap-10 md:grid-cols-2">
+            <div className="space-y-4">
+              {[
+                { Ic: Mail, l: "Email", v: PROFILE.email, href: `mailto:${PROFILE.email}`, color: "#EA4335" },
+                { Ic: IconGithub, l: "GitHub", v: PROFILE.github.replace("https://", ""), href: PROFILE.github, color: "#181717" },
+                { Ic: IconLinkedin, l: "LinkedIn", v: PROFILE.linkedin.replace("https://www.", ""), href: PROFILE.linkedin, color: "#0A66C2" },
+                { Ic: MapPin, l: "Location", v: PROFILE.location, href: undefined, color: RED },
+              ].map((c) => {
+                const inner = (
+                  <>
+                    <span
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white"
+                      style={{ background: c.color }}
+                    >
+                      <c.Ic size={18} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs text-slate-400">{c.l}</span>
+                      <span className="block truncate text-sm font-medium text-slate-800">{c.v}</span>
+                    </span>
+                  </>
+                );
+                const cls = "flex items-center gap-4 rounded-lg bg-white p-4 shadow-sm";
+                return c.href ? (
+                  <a
+                    key={c.l}
+                    href={c.href}
+                    target={c.href.startsWith("http") ? "_blank" : undefined}
+                    rel="noreferrer"
+                    className={`${cls} transition hover:shadow-md`}
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <div key={c.l} className={cls}>
+                    {inner}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="space-y-4 rounded-lg bg-white p-6 shadow-md">
+              <div>
+                <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Your name
+                </label>
+                <input
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Enter your full name"
+                  autoComplete="name"
+                  className={inputCls}
+                />
               </div>
-              <span className="font-bold text-lg">{CONFIG.name}</span>
-            </div>
-            <p className="text-gray-400 text-xs md:text-sm leading-relaxed mb-4 md:mb-6">
-              I build high-performance, SEO-optimized, and fully responsive websites using Next.js to help your business stand out.
-            </p>
-            <div className="flex gap-3 md:gap-4 justify-center md:justify-start">
-              <a href={CONFIG.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="bg-[#262626] p-2 rounded-md hover:bg-[#FF4D1C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]">
-                <FaGithub size={14} />
-              </a>
-              <a href={CONFIG.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="bg-[#262626] p-2 rounded-md hover:bg-[#FF4D1C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]">
-                <FaInstagram size={14} />
-              </a>
-              <a href={CONFIG.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="bg-[#262626] p-2 rounded-md hover:bg-[#FF4D1C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF4D1C]">
-                <FaLinkedin size={14} />
-              </a>
-            </div>
-          </div>
-
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-[#FF4D1C] text-xs md:text-sm mb-4 md:mb-6 uppercase">Navigation</h4>
-            <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-gray-400">
-              <li><a href="#home" className="hover:text-white focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">Home</a></li>
-              <li><a href="#about" className="hover:text-white focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">About Us</a></li>
-              <li><a href="#services" className="hover:text-white focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">Service</a></li>
-              <li><a href="#resume" className="hover:text-white focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">Resume</a></li>
-              <li><a href="#portfolio" className="hover:text-white focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">Project</a></li>
-            </ul>
-          </div>
-
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-[#FF4D1C] text-xs md:text-sm mb-4 md:mb-6 uppercase">Contact</h4>
-            <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-gray-400">
-              <li className="flex items-center justify-center md:justify-start gap-2"><Phone size={14} aria-hidden="true" /> {CONFIG.phone}</li>
-              <li className="flex items-center justify-center md:justify-start gap-2"><Mail size={14} aria-hidden="true" /> {CONFIG.email}</li>
-              <li className="flex items-center justify-center md:justify-start gap-2"><MapPin size={14} aria-hidden="true" /> {CONFIG.location}</li>
-            </ul>
-          </div>
-
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-[#FF4D1C] text-xs md:text-sm mb-4 md:mb-6 uppercase">Get the latest information</h4>
-            <form onSubmit={handleSubmit} className="flex bg-white rounded-md overflow-hidden pl-2 py-1 pr-1 max-w-xs mx-auto md:mx-0">
-              <label htmlFor="footer-email" className="sr-only">Email address</label>
-              <input
-                id="footer-email"
-                type="email"
-                placeholder="Your email address"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-transparent text-black text-xs outline-none flex-1 w-full placeholder:text-gray-400 px-1"
-              />
-              <button type="submit" className="bg-[#FF4D1C] p-2 rounded-md text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Send email">
-                <Send size={14} />
+              <div>
+                <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Your email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  rows={5}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="How can I help you?"
+                  className={inputCls}
+                />
+              </div>
+              <button
+                onClick={sendMessage}
+                disabled={!canSend || status === "sending"}
+                className="w-full rounded-md px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ background: RED }}
+              >
+                {status === "sending" ? "Sending..." : "Send message"}
               </button>
-            </form>
-            <p className="text-gray-500 text-xs mt-2">We'll open your email app to send us a message.</p>
+              <p aria-live="polite" className="min-h-5 text-center text-sm">
+                {status === "sent" && (
+                  <span className="text-green-700">
+                    {FORM_ENDPOINT
+                      ? "Thanks! Your message was sent. I'll reply soon."
+                      : "Your email app should open now. Send the message from there."}
+                  </span>
+                )}
+                {status === "error" && (
+                  <span className="text-red-700">
+                    Something went wrong. Please email me directly at {PROFILE.email}.
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="border-t border-gray-800 pt-4 md:pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-2">
-          <p>Copyright © 2026 {CONFIG.name}. All Rights Reserved.</p>
-          <p>
-            <Link href="/privacy" className="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">Privacy Policy</Link>
-            {" | "}
-            <Link href="/terms" className="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF4D1C] rounded">Terms & Conditions</Link>
+      {/* footer */}
+      <footer className="text-white" style={{ background: NAVY }}>
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-6 text-sm sm:flex-row">
+          <p className="text-slate-400">
+            © {new Date().getFullYear()} {PROFILE.name}. All rights reserved.
           </p>
+          <div className="flex gap-4 text-slate-300">
+            <a href={PROFILE.github} target="_blank" rel="noreferrer" className="hover:text-white">
+              GitHub
+            </a>
+            <a href={PROFILE.linkedin} target="_blank" rel="noreferrer" className="hover:text-white">
+              LinkedIn
+            </a>
+            <a href={`mailto:${PROFILE.email}`} className="hover:text-white">
+              Email
+            </a>
+          </div>
         </div>
-      </div>
-    </footer>
-  );
-};
+      </footer>
 
-// -----------------------------------------------------------------------------
-// Main Page Component
-// -----------------------------------------------------------------------------
-export default function PortfolioPage() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-
-  return (
-    <main id="main-content" className="font-sans antialiased text-[#1A1A1A] bg-white selection:bg-[#FF4D1C] selection:text-white">
-      <Navbar />
-      <Hero />
-      <Services />
-      <WorkExperience />
-      <WhyHireMe />
-      <Portfolio />
-      <Testimonials />
-      <CTA />
-      <AngledMarquee />
-      <Blog />
-      <Footer />
+      {/* back to top */}
+      {scrolled && (
+        <a
+          href="#home"
+          aria-label="Back to top"
+          className="fixed bottom-6 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg transition hover:brightness-110"
+          style={{ background: RED }}
+        >
+          <ArrowUp size={20} />
+        </a>
+      )}
     </main>
   );
 }
