@@ -24,7 +24,7 @@ function IconLinkedin({ size = 24, className = "" }: { size?: number; className?
 }
 
 /* ==================================================================== */
-/*  CONTENT — edit everything here (text, links, image paths)           */
+/*  CONTENT           */
 /* ==================================================================== */
 
 const PROFILE = {
@@ -170,12 +170,12 @@ const EDUCATION = [
     title: "Diploma in Information Technology (DIT)",
     place: "Govt. College of Management Sciences Ghallanai, Mohmand",
     period: "2025 – 2026",
-    result: "792 / 1000",
+    result: "789 / 1000",
     grade: "Grade A",
   },
 ];
 
-// DIT certificate removed (it is already listed under Education)
+//  certificate 
 const CERTIFICATES = [
   {
     title: "Digital Skills: Artificial Intelligence",
@@ -840,7 +840,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* certificate viewer (clean image view, no PDF toolbar) */}
+      {/* certificate viewer  */}
       {openCert !== null && (
         <div
           role="dialog"
